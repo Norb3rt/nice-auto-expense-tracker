@@ -1,3 +1,117 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom styles for responsive dropdown */
+@layer components {
+  .responsive-select {
+    /* Ensure dropdown options are properly sized on mobile */
+    font-size: 16px; /* Prevents zoom on iOS */
+    /* Ensure dropdown list is properly constrained and scrollable */
+    max-height: 15rem; /* Limit dropdown height */
+    overflow-y: auto; /* Enable scrolling when needed */
+  }
+
+  .responsive-select option {
+    padding: 0.75rem 1rem;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #374151;
+    background-color: white;
+    white-space: normal; /* Allow text wrapping for long category names */
+    word-wrap: break-word;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .responsive-select option:checked {
+    background-color: #10b981;
+    color: white;
+  }
+
+  .responsive-select option:hover {
+    background-color: #f3f4f6;
+  }
+
+  /* Ensure dropdown is properly positioned and scrollable */
+  .responsive-select:focus {
+    outline: none;
+  }
+
+  /* Mobile-specific improvements */
+  @media (max-width: 640px) {
+    .responsive-select {
+      font-size: 16px !important; /* Prevent zoom on mobile */
+      min-height: 3rem;
+      /* Ensure dropdown doesn't get cut off on mobile */
+      position: relative;
+      z-index: 10;
+    }
+
+    .responsive-select option {
+      padding: 1rem;
+      font-size: 16px;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  /* Tablet improvements */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .responsive-select {
+      font-size: 16px;
+    }
+
+    .responsive-select option {
+      padding: 0.875rem 1rem;
+    }
+  }
+
+  /* Responsive form inputs */
+  .responsive-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    transition: all 0.2s ease-in-out;
+  }
+
+  .responsive-input:focus {
+    transform: none; /* Prevent any transform that might cause issues */
+  }
+
+  /* Responsive modal */
+  .responsive-modal {
+    /* Ensure modal is properly positioned on all devices */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 50;
+  }
+
+  .responsive-modal-content {
+    width: 100%;
+    max-width: 28rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: auto;
+  }
+
+  @media (max-width: 640px) {
+    .responsive-modal {
+      align-items: flex-end;
+      padding: 0;
+    }
+
+    .responsive-modal-content {
+      max-height: 85vh;
+      border-radius: 1rem 1rem 0 0;
+      margin: 0;
+    }
+  }
+}

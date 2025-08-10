@@ -1,0 +1,216 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "add": "Agregar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "all": "Todos",
+    "total": "Total",
+    "amount": "Cantidad",
+    "date": "Fecha",
+    "description": "Descripción",
+    "category": "Categoría",
+    "categories": "Categorías",
+    "noData": "No hay datos disponibles",
+    "currency": "$"
+  },
+
+  "navigation": {
+    "dashboard": "Panel Principal",
+    "addExpense": "Agregar Gasto",
+    "allExpenses": "Todos los Gastos",
+    "expenses": "Gastos",
+    "categories": "Categorías",
+    "reports": "Reportes",
+    "home": "Inicio"
+  },
+
+  "auth": {
+    "welcomeBack": "Bienvenido de Nuevo",
+    "signInSubtitle": "Inicia sesión en tu cuenta de NiceAuto",
+    "emailAddress": "Dirección de Correo",
+    "emailPlaceholder": "Ingresa tu correo",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "signingIn": "Iniciando sesión...",
+    "signIn": "Iniciar Sesión",
+    "signOut": "Cerrar sesión",
+    "demoCredentials": "Credenciales de demostración: Usa cualquier correo y contraseña para continuar"
+  },
+
+  "header": {
+    "appName": "NiceAuto",
+    "subtitle": "Rastreador de Gastos"
+  },
+
+  "dashboard": {
+    "title": "Panel Principal",
+    "thisMonth": "Este Mes",
+    "dailyAverage": "Promedio Diario",
+    "totalExpenses": "Gastos Totales",
+    "categories": "Categorías",
+    "topCategories": "Principales Categorías",
+    "recentExpenses": "Gastos Recientes",
+    "viewReports": "Ver Reportes",
+    "viewAll": "Ver Todos",
+    "noExpenses": "Aún no hay gastos",
+    "addFirstExpense": "Agrega tu primer gasto"
+  },
+
+  "expenseForm": {
+    "title": "Agregar Nuevo Gasto",
+    "subtitle": "Rastrea tus gastos con solo unos clics",
+    "amount": "Cantidad",
+    "amountPlaceholder": "0.00",
+    "date": "Fecha",
+    "description": "Descripción",
+    "descriptionPlaceholder": "¿En qué gastaste?",
+    "category": "Categoría",
+    "selectCategory": "Selecciona una categoría",
+    "addExpense": "Agregar Gasto",
+    "addButton": "Agregar Gasto",
+    "addingExpense": "Agregando Gasto...",
+    "adding": "Agregando...",
+    "addCustomCategory": "Agregar Categoría Personalizada",
+    "addCustomCategoryTitle": "Agregar Categoría Personalizada",
+    "categoryNamePlaceholder": "Ingresa el nombre de la categoría",
+    "noCategoriesMessage": "No hay categorías disponibles. Por favor agrega una categoría primero.",
+    "noCategoriesTitle": "No Hay Categorías Disponibles",
+    "noCategoriesHelp": "Ve a la sección Categorías para crear tu primera categoría, o agrega una usando el botón de arriba."
+  },
+
+  "expenseList": {
+    "title": "Todos los Gastos",
+    "searchPlaceholder": "Buscar gastos...",
+    "allCategories": "Todas las Categorías",
+    "showingExpenses": "Mostrando {{count}} gastos • Total: {{total}}",
+    "noExpensesFound": "No se encontraron gastos",
+    "noExpensesSubtitle": "Intenta ajustar tu búsqueda o criterios de filtro",
+    "editExpense": "Editar gasto",
+    "deleteExpense": "Eliminar gasto",
+    "saveChanges": "Guardar Cambios"
+  },
+
+  "reports": {
+    "title": "Reportes y Análisis Avanzados",
+    "subtitle": "Perspectivas financieras integrales y reportes personalizables",
+    "totalExpenses": "Gastos Totales",
+    "averageExpense": "Gasto Promedio",
+    "categories": "Categorías",
+    "spendingByCategory": "Gastos por Categoría",
+    "monthlyExpensesLast6": "Gastos Mensuales (Últimos 6 Meses)",
+    "spendingTrendLast12": "Tendencia de Gastos (Últimos 12 Meses)",
+    "monthlyExpenses": "Gastos Mensuales"
+  },
+
+  "reportFilters": {
+    "title": "Configuración del Reporte",
+    "reportPeriod": "Período del Reporte",
+    "thisMonth": "Este Mes",
+    "thisYear": "Este Año",
+    "customRange": "Rango Personalizado",
+    "startDate": "Fecha de Inicio",
+    "endDate": "Fecha de Fin",
+    "groupBy": "Agrupar Por",
+    "categoriesOptional": "Categorías (Opcional)",
+    "categoriesSelected": "{{count}} categorías seleccionadas",
+    "includeCharts": "Incluir Gráficos en PDF",
+    "generatePDF": "Generar Reporte PDF",
+    "exportCSV": "Exportar CSV",
+    "monthlyComparison": "Comparación Mensual"
+  },
+
+  "analytics": {
+    "thisMonth": "Este Mes",
+    "vsLastMonth": "vs mes anterior",
+    "dailyAverage": "Promedio Diario",
+    "topCategory": "Categoría Principal",
+    "avgTransaction": "Transacción Promedio",
+    "total": "total",
+    "spendingTrend6Months": "Tendencia de Gastos de 6 Meses",
+    "sixMonthTrend": "Tendencia de Gastos (Últimos 6 Meses)",
+    "transactions": "transacciones",
+    "spendingInsights": "Perspectivas de Gastos",
+    "monthlyComparison": "Comparación Mensual",
+    "spentMore": "Gastaste {{amount}} más que el mes pasado",
+    "spentLess": "Gastaste {{amount}} menos que el mes pasado",
+    "spendingPattern": "Patrón de Gastos",
+    "spendMostOn": "Gastas más en {{category}}",
+     "transactionCount": "transacciones",
+    "noSpendingPattern": "No se detectó un patrón claro de gastos",
+    "categoryDiversity": "Diversidad de Categorías",
+    "trackingCategories": "Estás rastreando gastos en {{count}} categorías diferentes",
+    "yearlyProjection": "Proyección Anual",
+    "yearlyProjectionText": "Al ritmo actual, gastarás ~{{amount}} este año"
+  },
+
+  "categoryManagement": {
+    "title": "Gestión de Categorías",
+    "subtitle": "Administra tus categorías de gastos",
+    "addNewCategory": "Agregar Nueva Categoría",
+    "categoryNamePlaceholder": "Ingresa el nombre de la categoría",
+    "yourCategories": "Tus Categorías",
+    "noCategories": "Aún no hay categorías",
+    "addFirstCategory": "Agrega tu primera categoría para comenzar",
+    "categoryExists": "Esta categoría ya existe",
+    "deleteConfirmTitle": "Eliminar Categoría",
+    "deleteConfirmMessage": "¿Estás seguro de que quieres eliminar '{{category}}'? Esta categoría se usa en {{count}} gasto(s).",
+    "summary": "Resumen de Categorías",
+    "totalCategories": "Total de Categorías",
+    "categoriesInUse": "Categorías en Uso",
+    "yourCategories": "Tus Categorías",
+    "noCategories": "Aún no hay categorías",
+    "addFirstCategory": "Agrega tu primera categoría para comenzar",
+    "deleteConfirmTitle": "Eliminar Categoría",
+    "deleteConfirmMessage": "¿Estás seguro de que quieres eliminar '{{category}}'? Esta categoría se usa en {{count}} gasto(s).",
+    "replacementCategory": "Reemplazar con categoría (opcional)",
+    "removeFromExpenses": "Eliminar de gastos",
+    "expense": "gasto",
+    "expenses": "gastos"
+  },
+
+  "categorySetup": {
+    "title": "Configura Tus Categorías",
+    "subtitle": "Elige categorías que coincidan con tus hábitos de gasto. Siempre puedes agregar más después.",
+    "suggestedCategories": "Categorías Sugeridas",
+    "addCustomCategory": "Agregar Categoría Personalizada",
+    "customCategoryPlaceholder": "Ingresa tu propia categoría",
+    "selectedCategories": "Categorías Seleccionadas",
+    "skipForNow": "Omitir por Ahora",
+    "continue": "Continuar"
+  },
+
+  "pdf": {
+    "reportTitle": "Reporte de Gastos NiceAuto",
+    "summary": "Resumen",
+    "totalExpenses": "Gastos Totales",
+    "numberOfTransactions": "Número de Transacciones",
+    "averageTransaction": "Transacción Promedio",
+    "categories": "Categorías",
+    "topCategories": "Principales Categorías",
+    "detailedTransactions": "Transacciones Detalladas",
+    "charts": "Gráficos",
+    "generatedOn": "Generado el {{date}}",
+    "page": "Página {{current}} de {{total}}",
+    "monthlyReport": "Reporte Mensual - {{month}}",
+    "yearlyReport": "Reporte Anual - {{year}}",
+    "customReport": "Reporte Personalizado - {{startDate}} a {{endDate}}",
+    "customReportDefault": "Reporte Personalizado",
+    "expenseReport": "Reporte de Gastos",
+    "monthlyComparison": "Comparación de Gastos Mensuales",
+    "month": "Mes",
+    "percentage": "Porcentaje"
+  },
+
+  "formats": {
+    "currency": "${{amount}}",
+    "percentage": "{{value}}%",
+    "dateShort": "dd MMM yyyy",
+    "dateLong": "dd 'de' MMMM 'de' yyyy",
+    "monthYear": "MMMM 'de' yyyy"
+  }
+}

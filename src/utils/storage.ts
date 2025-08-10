@@ -3,7 +3,8 @@ import { Expense, User } from '../types';
 const STORAGE_KEYS = {
   EXPENSES: 'niceauto_expenses',
   USER: 'niceauto_user',
-  AUTH_TOKEN: 'niceauto_auth'
+  AUTH_TOKEN: 'niceauto_auth',
+  CUSTOM_CATEGORIES: 'niceauto_custom_categories'
 };
 
 export const storage = {
@@ -31,6 +32,15 @@ export const storage = {
 
   saveAuthToken: (token: string): void => {
     localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+  },
+
+  getCustomCategories: (): string[] => {
+    const categories = localStorage.getItem(STORAGE_KEYS.CUSTOM_CATEGORIES);
+    return categories ? JSON.parse(categories) : [];
+  },
+
+  saveCustomCategories: (categories: string[]): void => {
+    localStorage.setItem(STORAGE_KEYS.CUSTOM_CATEGORIES, JSON.stringify(categories));
   },
 
   clearAll: (): void => {
@@ -80,7 +90,7 @@ export const importFromJSON = (file: File): Promise<Expense[]> => {
       try {
         const expenses = JSON.parse(e.target?.result as string);
         resolve(expenses);
-      } catch (error) {
+      } catch {
         reject(new Error('Invalid JSON file'));
       }
     };
@@ -88,45 +98,67 @@ export const importFromJSON = (file: File): Promise<Expense[]> => {
     reader.readAsText(file);
   });
 };
-export const generateDemoData = (): Expense[] => [
-  {
-    id: '1',
-    amount: 45.50,
-    description: 'Grocery shopping',
-    category: 'Food & Dining',
-    date: '2025-01-15',
-    createdAt: '2025-01-15T10:30:00Z'
-  },
-  {
-    id: '2',
-    amount: 120.00,
-    description: 'Gas station',
-    category: 'Transportation',
-    date: '2025-01-14',
-    createdAt: '2025-01-14T15:45:00Z'
-  },
-  {
-    id: '3',
-    amount: 89.99,
-    description: 'Internet bill',
-    category: 'Utilities',
-    date: '2025-01-13',
-    createdAt: '2025-01-13T09:15:00Z'
-  },
-  {
-    id: '4',
-    amount: 25.00,
-    description: 'Coffee shop',
-    category: 'Food & Dining',
-    date: '2025-01-12',
-    createdAt: '2025-01-12T08:20:00Z'
-  },
-  {
-    id: '5',
-    amount: 350.00,
-    description: 'Monthly rent',
-    category: 'Housing',
-    date: '2025-01-01',
-    createdAt: '2025-01-01T12:00:00Z'
+export const getCustomCategories = (): string[] => {
+  const categories = localStorage.getItem(STORAGE_KEYS.CUSTOM_CATEGORIES);
+  return categories ? JSON.parse(categories) : [];
+};
+
+export const saveCustomCategories = (categories: string[]): void => {
+  localStorage.setItem(STORAGE_KEYS.CUSTOM_CATEGORIES, JSON.stringify(categories));
+};
+
+export const generateDemoData = (): Expense[] => {
+  // Get existing categories or use the ones that were just set up
+  const existingCategories = getCustomCategories();
+
+  // Only generate demo data if categories exist
+  if (existingCategories.length === 0) {
+    return [];
   }
-];
+
+  // Use the first few categories for demo data
+  const [firstCat, secondCat, thirdCat, fourthCat] = existingCategories;
+
+  return [
+    {
+      id: '1',
+      amount: 45.50,
+      description: 'Grocery shopping',
+      category: firstCat || 'Uncategorized',
+      date: '2025-01-15',
+      createdAt: '2025-01-15T10:30:00Z'
+    },
+    {
+      id: '2',
+      amount: 120.00,
+      description: 'Gas station',
+      category: secondCat || firstCat || 'Uncategorized',
+      date: '2025-01-14',
+      createdAt: '2025-01-14T15:45:00Z'
+    },
+    {
+      id: '3',
+      amount: 89.99,
+      description: 'Internet bill',
+      category: thirdCat || firstCat || 'Uncategorized',
+      date: '2025-01-13',
+      createdAt: '2025-01-13T09:15:00Z'
+    },
+    {
+      id: '4',
+      amount: 25.00,
+      description: 'Coffee shop',
+      category: firstCat || 'Uncategorized',
+      date: '2025-01-12',
+      createdAt: '2025-01-12T08:20:00Z'
+    },
+    {
+      id: '5',
+      amount: 350.00,
+      description: 'Monthly rent',
+      category: fourthCat || firstCat || 'Uncategorized',
+      date: '2025-01-01',
+      createdAt: '2025-01-01T12:00:00Z'
+    }
+  ];
+};

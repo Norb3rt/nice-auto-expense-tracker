@@ -1,0 +1,216 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete", 
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "total": "Total",
+    "amount": "Amount",
+    "date": "Date",
+    "description": "Description",
+    "category": "Category",
+    "categories": "Categories",
+    "noData": "No data available",
+    "currency": "$"
+  },
+
+  "navigation": {
+    "dashboard": "Dashboard",
+    "addExpense": "Add Expense",
+    "allExpenses": "All Expenses",
+    "expenses": "Expenses",
+    "categories": "Categories",
+    "reports": "Reports",
+    "home": "Home"
+  },
+
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "signInSubtitle": "Sign in to your NiceAuto account",
+    "emailAddress": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "signingIn": "Signing in...",
+    "signIn": "Sign In",
+    "signOut": "Sign out",
+    "demoCredentials": "Demo credentials: Use any email and password to continue"
+  },
+
+  "header": {
+    "appName": "NiceAuto",
+    "subtitle": "Expense Tracker"
+  },
+
+  "dashboard": {
+    "title": "Dashboard",
+    "thisMonth": "This Month",
+    "dailyAverage": "Daily Average",
+    "totalExpenses": "Total Expenses",
+    "categories": "Categories",
+    "topCategories": "Top Categories",
+    "recentExpenses": "Recent Expenses",
+    "viewReports": "View Reports",
+    "viewAll": "View All",
+    "noExpenses": "No expenses yet",
+    "addFirstExpense": "Add your first expense"
+  },
+
+  "expenseForm": {
+    "title": "Add New Expense",
+    "subtitle": "Track your spending with just a few clicks",
+    "amount": "Amount",
+    "amountPlaceholder": "0.00",
+    "date": "Date",
+    "description": "Description",
+    "descriptionPlaceholder": "What did you spend on?",
+    "category": "Category",
+    "selectCategory": "Select a category",
+    "addExpense": "Add Expense",
+    "addButton": "Add Expense",
+    "addingExpense": "Adding Expense...",
+    "adding": "Adding...",
+    "addCustomCategory": "Add Custom Category",
+    "addCustomCategoryTitle": "Add Custom Category",
+    "categoryNamePlaceholder": "Enter category name",
+    "noCategoriesMessage": "No categories available. Please add a category first.",
+    "noCategoriesTitle": "No Categories Available",
+    "noCategoriesHelp": "Go to the Categories section to create your first category, or add one using the button above."
+  },
+
+  "expenseList": {
+    "title": "All Expenses",
+    "searchPlaceholder": "Search expenses...",
+    "allCategories": "All Categories",
+    "showingExpenses": "Showing {{count}} expenses • Total: {{total}}",
+    "noExpensesFound": "No expenses found",
+    "noExpensesSubtitle": "Try adjusting your search or filter criteria",
+    "editExpense": "Edit expense",
+    "deleteExpense": "Delete expense",
+    "saveChanges": "Save Changes"
+  },
+
+  "reports": {
+    "title": "Advanced Reports & Analytics",
+    "subtitle": "Comprehensive financial insights and customizable reports",
+    "totalExpenses": "Total Expenses",
+    "averageExpense": "Average Expense",
+    "categories": "Categories",
+    "spendingByCategory": "Spending by Category",
+    "monthlyExpensesLast6": "Monthly Expenses (Last 6 Months)",
+    "spendingTrendLast12": "Spending Trend (Last 12 Months)",
+    "monthlyExpenses": "Monthly Expenses"
+  },
+
+  "reportFilters": {
+    "title": "Report Configuration",
+    "reportPeriod": "Report Period",
+    "thisMonth": "This Month",
+    "thisYear": "This Year",
+    "customRange": "Custom Range",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "groupBy": "Group By",
+    "categoriesOptional": "Categories (Optional)",
+    "categoriesSelected": "{{count}} categories selected",
+    "includeCharts": "Include Charts in PDF",
+    "generatePDF": "Generate PDF Report",
+    "exportCSV": "Export CSV",
+    "monthlyComparison": "Monthly Comparison"
+  },
+
+  "analytics": {
+    "thisMonth": "This Month",
+    "vsLastMonth": "vs last month",
+    "dailyAverage": "Daily Average",
+    "topCategory": "Top Category",
+    "avgTransaction": "Avg Transaction",
+    "total": "total",
+    "spendingTrend6Months": "6-Month Spending Trend",
+    "sixMonthTrend": "6-Month Spending Trend",
+    "transactions": "transactions",
+    "spendingInsights": "Spending Insights",
+    "monthlyComparison": "Monthly Comparison",
+    "spentMore": "You spent {{amount}} more than last month",
+    "spentLess": "You spent {{amount}} less than last month",
+    "spendingPattern": "Spending Pattern",
+    "spendMostOn": "You spend most on {{category}}",
+    "transactionCount": "transactions",
+    "noSpendingPattern": "No clear spending pattern detected",
+    "categoryDiversity": "Category Diversity",
+    "trackingCategories": "You're tracking expenses across {{count}} different categories",
+    "yearlyProjection": "Yearly Projection",
+    "yearlyProjectionText": "At current rate, you'll spend ~{{amount}} this year"
+  },
+
+  "categoryManagement": {
+    "title": "Category Management",
+    "subtitle": "Manage your expense categories",
+    "addNewCategory": "Add New Category",
+    "categoryNamePlaceholder": "Enter category name",
+    "yourCategories": "Your Categories",
+    "noCategories": "No categories yet",
+    "addFirstCategory": "Add your first category to get started",
+    "categoryExists": "This category already exists",
+    "deleteConfirmTitle": "Delete Category",
+    "deleteConfirmMessage": "Are you sure you want to delete '{{category}}'? This category is used in {{count}} expense(s).",
+    "summary": "Category Summary",
+    "totalCategories": "Total Categories",
+    "categoriesInUse": "Categories in Use",
+    "yourCategories": "Your Categories",
+    "noCategories": "No categories yet",
+    "addFirstCategory": "Add your first category to get started",
+    "deleteConfirmTitle": "Delete Category",
+    "deleteConfirmMessage": "Are you sure you want to delete '{{category}}'? This category is used in {{count}} expense(s).",
+    "replacementCategory": "Replace with category (optional)",
+    "removeFromExpenses": "Remove from expenses",
+    "expense": "expense",
+    "expenses": "expenses"
+  },
+
+  "categorySetup": {
+    "title": "Set Up Your Categories",
+    "subtitle": "Choose categories that match your spending habits. You can always add more later.",
+    "suggestedCategories": "Suggested Categories",
+    "addCustomCategory": "Add Custom Category",
+    "customCategoryPlaceholder": "Enter your own category",
+    "selectedCategories": "Selected Categories",
+    "skipForNow": "Skip for Now",
+    "continue": "Continue"
+  },
+
+  "pdf": {
+    "reportTitle": "NiceAuto Expense Report",
+    "summary": "Summary",
+    "totalExpenses": "Total Expenses",
+    "numberOfTransactions": "Number of Transactions",
+    "averageTransaction": "Average Transaction",
+    "categories": "Categories",
+    "topCategories": "Top Categories",
+    "detailedTransactions": "Detailed Transactions",
+    "charts": "Charts",
+    "generatedOn": "Generated on {{date}}",
+    "page": "Page {{current}} of {{total}}",
+    "monthlyReport": "Monthly Report - {{month}}",
+    "yearlyReport": "Yearly Report - {{year}}",
+    "customReport": "Custom Report - {{startDate}} to {{endDate}}",
+    "customReportDefault": "Custom Report",
+    "expenseReport": "Expense Report",
+    "monthlyComparison": "Monthly Expense Comparison",
+    "month": "Month",
+    "percentage": "Percentage"
+  },
+
+  "formats": {
+    "currency": "${{amount}}",
+    "percentage": "{{value}}%",
+    "dateShort": "MMM dd, yyyy",
+    "dateLong": "MMMM dd, yyyy",
+    "monthYear": "MMMM yyyy"
+  }
+}

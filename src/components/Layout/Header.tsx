@@ -1,6 +1,8 @@
 import React from 'react';
-import { LogOut, User, Bell } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { User as UserType } from '../../types';
+import LanguageSwitcher from '../LanguageSwitcher';
 
 interface HeaderProps {
   user: UserType;
@@ -8,6 +10,8 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
+
   return (
     <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-4">
       <div className="flex items-center justify-between">
@@ -16,17 +20,19 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
             <span className="text-white font-bold text-lg">N</span>
           </div>
           <div className="hidden sm:block">
-            <h1 className="text-xl font-bold text-gray-900">NiceAuto</h1>
-            <p className="text-sm text-gray-600">Expense Tracker</p>
+            <h1 className="text-xl font-bold text-gray-900">{t('header.appName')}</h1>
+            <p className="text-sm text-gray-600">{t('header.subtitle')}</p>
           </div>
         </div>
 
         <div className="flex items-center space-x-4">
+          {/* <LanguageSwitcher /> */}
           {/* <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200">
             <Bell className="w-5 h-5" />
           </button> */}
 
           <div className="flex items-center space-x-3">
+
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium text-gray-900">{user.name}</p>
               <p className="text-xs text-gray-600">{user.email}</p>

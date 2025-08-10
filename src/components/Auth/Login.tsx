@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { LogIn, Mail, Lock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface LoginProps {
   onLogin: (email: string, password: string) => void;
 }
 
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -29,14 +31,14 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <LogIn className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your NiceAuto account</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('auth.welcomeBack')}</h1>
+            <p className="text-gray-600">{t('auth.signInSubtitle')}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+                {t('auth.emailAddress')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -45,7 +47,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your email"
+                  placeholder={t('auth.emailPlaceholder')}
                   required
                 />
               </div>
@@ -53,7 +55,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -62,7 +64,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your password"
+                  placeholder={t('auth.passwordPlaceholder')}
                   required
                 />
               </div>
@@ -76,17 +78,17 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Signing in...
+                  {t('auth.signingIn')}
                 </div>
               ) : (
-                'Sign In'
+                t('auth.signIn')
               )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Demo credentials: Use any email and password to continue
+              {t('auth.demoCredentials')}
             </p>
           </div>
         </div>

@@ -1,5 +1,7 @@
 import React from 'react';
-import { BarChart3, Plus, List, FileText, Home } from 'lucide-react';
+import { BarChart3, Plus, List, Home, Settings } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 
 interface SidebarProps {
   activeTab: string;
@@ -7,11 +9,14 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
+  const { t } = useTranslation();
+
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'add-expense', label: 'Add Expense', icon: Plus },
-    { id: 'expenses', label: 'All Expenses', icon: List },
-    { id: 'reports', label: 'Reports', icon: BarChart3 }
+    { id: 'dashboard', label: t('navigation.dashboard'), icon: Home },
+    { id: 'add-expense', label: t('navigation.addExpense'), icon: Plus },
+    { id: 'expenses', label: t('navigation.allExpenses'), icon: List },
+    { id: 'categories', label: t('navigation.categories'), icon: Settings },
+    { id: 'reports', label: t('navigation.reports'), icon: BarChart3 }
   ];
 
   return (
@@ -20,16 +25,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
-          
+
           return (
             <button
               key={item.id}
               onClick={() => onTabChange(item.id)}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                isActive
-                  ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
+                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200'
+                : 'text-gray-700 hover:bg-gray-50'
+                }`}
             >
               <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} />
               <span className="font-medium">{item.label}</span>

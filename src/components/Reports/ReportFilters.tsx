@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Filter, Download, FileText, BarChart3 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ReportFiltersProps {
   onGenerateReport: (options: ReportOptions) => void;
@@ -23,6 +24,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
   onExportCSV,
   categories
 }) => {
+  const { t } = useTranslation();
   const [period, setPeriod] = useState<'monthly' | 'yearly' | 'custom'>('monthly');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -31,7 +33,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
   const [groupBy, setGroupBy] = useState<'category' | 'date' | 'amount'>('category');
 
   const handleCategoryToggle = (category: string) => {
-    setSelectedCategories(prev => 
+    setSelectedCategories(prev =>
       prev.includes(category)
         ? prev.filter(c => c !== category)
         : [...prev, category]
@@ -47,7 +49,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
       includeCharts,
       groupBy
     };
-    
+
     onGenerateReport(options);
   };
 
@@ -57,7 +59,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-lg">
           <Filter className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">Report Configuration</h3>
+        <h3 className="text-lg font-semibold text-gray-900">{t('reportFilters.title')}</h3>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -65,22 +67,21 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Report Period
+              {t('reportFilters.reportPeriod')}
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { value: 'monthly', label: 'This Month' },
-                { value: 'yearly', label: 'This Year' },
-                { value: 'custom', label: 'Custom Range' }
+                { value: 'monthly', label: t('reportFilters.thisMonth') },
+                { value: 'yearly', label: t('reportFilters.thisYear') },
+                { value: 'custom', label: t('reportFilters.customRange') }
               ].map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => setPeriod(option.value as any)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    period === option.value
+                  onClick={() => setPeriod(option.value as 'monthly' | 'yearly' | 'custom')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${period === option.value
                       ? 'bg-blue-600 text-white shadow-md'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   {option.label}
                 </button>
@@ -92,7 +93,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Date
+                  {t('reportFilters.startDate')}
                 </label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -106,7 +107,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  End Date
+                  {t('reportFilters.endDate')}
                 </label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -123,16 +124,16 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Group By
+              {t('reportFilters.groupBy')}
             </label>
             <select
               value={groupBy}
-              onChange={(e) => setGroupBy(e.target.value as any)}
+              onChange={(e) => setGroupBy(e.target.value as 'category' | 'date' | 'amount')}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
             >
-              <option value="category">Category</option>
-              <option value="date">Date</option>
-              <option value="amount">Amount</option>
+              <option value="category">{t('expenseForm.category')}</option>
+              <option value="date">{t('expenseForm.date')}</option>
+              <option value="amount">{t('expenseForm.amount')}</option>
             </select>
           </div>
         </div>
@@ -141,7 +142,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Categories (Optional)
+              {t('reportFilters.categoriesOptional')}
             </label>
             <div className="max-h-40 overflow-y-auto space-y-2 border border-gray-200 rounded-lg p-3">
               {categories.map((category) => (
@@ -158,7 +159,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
             </div>
             {selectedCategories.length > 0 && (
               <p className="text-xs text-gray-500 mt-2">
-                {selectedCategories.length} categories selected
+                {t('reportFilters.categoriesSelected', { count: selectedCategories.length })}
               </p>
             )}
           </div>
@@ -171,7 +172,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
                 onChange={(e) => setIncludeCharts(e.target.checked)}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="text-sm font-medium text-gray-700">Include Charts in PDF</span>
+              <span className="text-sm font-medium text-gray-700">{t('reportFilters.includeCharts')}</span>
             </label>
           </div>
         </div>
@@ -184,7 +185,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
           className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-200 transition-all duration-200"
         >
           <FileText className="w-4 h-4" />
-          <span>Generate PDF Report</span>
+          <span>{t('reportFilters.generatePDF')}</span>
         </button>
 
         <button
@@ -192,7 +193,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
           className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-medium hover:from-green-700 hover:to-emerald-700 focus:ring-4 focus:ring-green-200 transition-all duration-200"
         >
           <Download className="w-4 h-4" />
-          <span>Export CSV</span>
+          <span>{t('reportFilters.exportCSV')}</span>
         </button>
 
         <button
@@ -200,7 +201,7 @@ export const ReportFilters: React.FC<ReportFiltersProps> = ({
           className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-medium hover:from-purple-700 hover:to-pink-700 focus:ring-4 focus:ring-purple-200 transition-all duration-200"
         >
           <BarChart3 className="w-4 h-4" />
-          <span>Monthly Comparison</span>
+          <span>{t('reportFilters.monthlyComparison')}</span>
         </button>
       </div>
     </div>

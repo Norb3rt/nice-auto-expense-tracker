@@ -7,54 +7,63 @@ import { Dashboard } from './components/Dashboard';
 import { ExpenseForm } from './components/ExpenseForm';
 import { ExpenseList } from './components/ExpenseList';
 import { Reports } from './components/Reports';
+import { CategoryManagement } from './components/CategoryManagement';
+import { CategorySetup } from './components/CategorySetup';
 import { Expense, User } from './types';
-import { storage, generateDemoData } from './utils/storage';
+import { storage, generateDemoData, getCustomCategories } from './utils/storage';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showCategorySetup, setShowCategorySetup] = useState(false);
 
   useEffect(() => {
     // Check for existing session
     const savedUser = storage.getUser();
     const authToken = storage.getAuthToken();
-    
+
     if (savedUser && authToken) {
       setUser(savedUser);
       const savedExpenses = storage.getExpenses();
-      // If no expenses exist, load demo data
-      if (savedExpenses.length === 0) {
-        const demoExpenses = generateDemoData();
-        setExpenses(demoExpenses);
-        storage.saveExpenses(demoExpenses);
+      const existingCategories = getCustomCategories();
+
+      // Check if user needs category setup
+      if (existingCategories.length === 0 && savedExpenses.length === 0) {
+        setShowCategorySetup(true);
+      } else if (savedExpenses.length === 0) {
+        // If no expenses exist but categories exist, don't load demo data
+        setExpenses([]);
       } else {
         setExpenses(savedExpenses);
       }
     }
-    
+
     setIsLoading(false);
   }, []);
 
-  const handleLogin = (email: string, password: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleLogin = (email: string, _password: string) => {
     // Simulate authentication
     const newUser: User = {
       id: '1',
       name: email.split('@')[0],
       email
     };
-    
+
     setUser(newUser);
     storage.saveUser(newUser);
     storage.saveAuthToken('demo-token-' + Date.now());
-    
-    // Load demo data for new users
+
+    // Check if new user needs category setup
+    const existingCategories = getCustomCategories();
     const savedExpenses = storage.getExpenses();
-    if (savedExpenses.length === 0) {
-      const demoExpenses = generateDemoData();
-      setExpenses(demoExpenses);
-      storage.saveExpenses(demoExpenses);
+
+    if (existingCategories.length === 0 && savedExpenses.length === 0) {
+      setShowCategorySetup(true);
+    } else if (savedExpenses.length === 0) {
+      setExpenses([]);
     } else {
       setExpenses(savedExpenses);
     }
@@ -73,7 +82,7 @@ function App() {
       id: Date.now().toString(),
       createdAt: new Date().toISOString()
     };
-    
+
     const updatedExpenses = [newExpense, ...expenses];
     setExpenses(updatedExpenses);
     storage.saveExpenses(updatedExpenses);
@@ -87,11 +96,25 @@ function App() {
   };
 
   const handleEditExpense = (updatedExpense: Expense) => {
-    const updatedExpenses = expenses.map(expense => 
+    const updatedExpenses = expenses.map(expense =>
       expense.id === updatedExpense.id ? updatedExpense : expense
     );
     setExpenses(updatedExpenses);
     storage.saveExpenses(updatedExpenses);
+  };
+
+  const handleCategorySetupComplete = (categories: string[]) => {
+    setShowCategorySetup(false);
+    // Optionally load demo data with the new categories
+    if (categories.length > 0) {
+      const demoExpenses = generateDemoData();
+      setExpenses(demoExpenses);
+      storage.saveExpenses(demoExpenses);
+    }
+  };
+
+  const handleCategorySetupSkip = () => {
+    setShowCategorySetup(false);
   };
 
   if (isLoading) {
@@ -109,6 +132,15 @@ function App() {
     return <Login onLogin={handleLogin} />;
   }
 
+  if (showCategorySetup) {
+    return (
+      <CategorySetup
+        onComplete={handleCategorySetupComplete}
+        onSkip={handleCategorySetupSkip}
+      />
+    );
+  }
+
   const renderActiveComponent = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -123,6 +155,16 @@ function App() {
             onEditExpense={handleEditExpense}
           />
         );
+      case 'categories':
+        return (
+          <CategoryManagement
+            expenses={expenses}
+            onUpdateExpenses={(updatedExpenses) => {
+              setExpenses(updatedExpenses);
+              storage.saveExpenses(updatedExpenses);
+            }}
+          />
+        );
       case 'reports':
         return <Reports expenses={expenses} />;
       default:
@@ -133,15 +175,15 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header user={user} onLogout={handleLogout} />
-      
+
       <div className="flex">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        
+
         <main className="flex-1 pb-20 lg:pb-0">
           {renderActiveComponent()}
         </main>
       </div>
-      
+
       <MobileNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );

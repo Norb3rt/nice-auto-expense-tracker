@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Download, TrendingUp, PieChart as PieChartIcon, BarChart3, FileText, Calendar } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { TrendingUp, PieChart as PieChartIcon, BarChart3, FileText } from 'lucide-react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -37,6 +38,7 @@ interface ReportsProps {
 }
 
 export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
+  const { t } = useTranslation();
   const categories = [...new Set(expenses.map(expense => expense.category))];
 
   const handleGenerateReport = (options: ReportOptions) => {
@@ -82,7 +84,7 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
     const monthlyTotals = last6Months.map(month => {
       const monthStart = startOfMonth(month);
       const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-      
+
       const monthTotal = expenses
         .filter(expense => {
           const expenseDate = new Date(expense.date);
@@ -118,7 +120,7 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
     const trendTotals = last12Months.map(month => {
       const monthStart = startOfMonth(month);
       const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-      
+
       const monthTotal = expenses
         .filter(expense => {
           const expenseDate = new Date(expense.date);
@@ -147,15 +149,6 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
 
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   const avgExpense = expenses.length > 0 ? totalExpenses / expenses.length : 0;
-  
-  const handleExportPDF = () => {
-    const defaultOptions: ReportOptions = {
-      period: 'monthly',
-      includeCharts: true,
-      groupBy: 'category'
-    };
-    generatePDFReport(expenses, defaultOptions);
-  };
 
   const chartOptions = {
     responsive: true,
@@ -168,7 +161,7 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function(value: any) {
+          callback: function (value: string | number) {
             return '$' + value.toFixed(0);
           }
         }
@@ -184,7 +177,7 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function (context: { label: string; parsed: number; dataset: { data: number[] } }) {
             const label = context.label || '';
             const value = context.parsed || 0;
             const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
@@ -200,8 +193,8 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Advanced Reports & Analytics</h2>
-          <p className="text-gray-600 mt-1">Comprehensive financial insights and customizable reports</p>
+          <h2 className="text-2xl font-bold text-gray-900">{t('reports.title')}</h2>
+          <p className="text-gray-600 mt-1">{t('reports.subtitle')}</p>
         </div>
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 rounded-xl">
           <FileText className="w-6 h-6 text-white" />
@@ -224,7 +217,7 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
         <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-700 text-sm font-medium">Total Expenses</p>
+              <p className="text-blue-700 text-sm font-medium">{t('reports.totalExpenses')}</p>
               <p className="text-2xl font-bold text-blue-900">${totalExpenses.toFixed(2)}</p>
             </div>
             <div className="bg-blue-600 p-3 rounded-xl">
@@ -236,7 +229,7 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
         <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-2xl border border-green-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-700 text-sm font-medium">Average Expense</p>
+              <p className="text-green-700 text-sm font-medium">{t('reports.averageExpense')}</p>
               <p className="text-2xl font-bold text-green-900">${avgExpense.toFixed(2)}</p>
             </div>
             <div className="bg-green-600 p-3 rounded-xl">
@@ -248,7 +241,7 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
         <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-700 text-sm font-medium">Categories</p>
+              <p className="text-purple-700 text-sm font-medium">{t('reports.categories')}</p>
               <p className="text-2xl font-bold text-purple-900">{categoryData.labels.length}</p>
             </div>
             <div className="bg-purple-600 p-3 rounded-xl">
@@ -261,14 +254,14 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
       {/* Charts */}
       <div id="charts-container" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div id="pie-chart-container" className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Spending by Category</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('reports.spendingByCategory')}</h3>
           <div className="h-80">
             <Pie data={categoryData} options={pieOptions} />
           </div>
         </div>
 
         <div id="bar-chart-container" className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Expenses (Last 6 Months)</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('reports.monthlyExpensesLast6')}</h3>
           <div className="h-80">
             <Bar data={monthlyData} options={chartOptions} />
           </div>
@@ -276,7 +269,7 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
       </div>
 
       <div id="line-chart-container" className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Spending Trend (Last 12 Months)</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('reports.spendingTrendLast12')}</h3>
         <div className="h-80">
           <Line data={trendData} options={chartOptions} />
         </div>

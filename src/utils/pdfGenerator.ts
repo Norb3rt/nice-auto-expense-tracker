@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import { Expense } from '../types';
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+import i18n from '../i18n';
 
 export interface ReportOptions {
   period: 'monthly' | 'yearly' | 'custom';
@@ -31,7 +32,7 @@ export const generatePDFReport = async (expenses: Expense[], options: ReportOpti
   // Header
   doc.setFontSize(20);
   doc.setTextColor(37, 99, 235); // Blue color
-  doc.text('NiceAuto Expense Report', 20, 25);
+  doc.text(i18n.t('pdf.reportTitle'), 20, 25);
   
   // Report period
   doc.setFontSize(12);
@@ -46,13 +47,13 @@ export const generatePDFReport = async (expenses: Expense[], options: ReportOpti
   
   doc.setFontSize(14);
   doc.setTextColor(17, 24, 39); // Dark gray
-  doc.text('Summary', 20, 50);
+  doc.text(i18n.t('pdf.summary'), 20, 50);
   
   doc.setFontSize(11);
-  doc.text(`Total Expenses: $${totalAmount.toFixed(2)}`, 20, 60);
-  doc.text(`Number of Transactions: ${filteredExpenses.length}`, 20, 68);
-  doc.text(`Average Transaction: $${avgAmount.toFixed(2)}`, 20, 76);
-  doc.text(`Categories: ${categoryCount}`, 20, 84);
+  doc.text(`${i18n.t('pdf.totalExpenses')}: $${totalAmount.toFixed(2)}`, 20, 60);
+  doc.text(`${i18n.t('pdf.numberOfTransactions')}: ${filteredExpenses.length}`, 20, 68);
+  doc.text(`${i18n.t('pdf.averageTransaction')}: $${avgAmount.toFixed(2)}`, 20, 76);
+  doc.text(`${i18n.t('pdf.categories')}: ${categoryCount}`, 20, 84);
   
   // Category breakdown
   const categoryTotals = getCategoryTotals(filteredExpenses);
@@ -62,7 +63,7 @@ export const generatePDFReport = async (expenses: Expense[], options: ReportOpti
   
   if (categoryData.length > 0) {
     doc.setFontSize(14);
-    doc.text('Top Categories', 20, 100);
+    doc.text(i18n.t('pdf.topCategories'), 20, 100);
     
     const categoryTableData = categoryData.map(([category, amount]) => [
       category,
@@ -72,7 +73,7 @@ export const generatePDFReport = async (expenses: Expense[], options: ReportOpti
     
     autoTable(doc, {
       startY: 105,
-      head: [['Category', 'Amount', 'Percentage']],
+      head: [[i18n.t('expenseForm.category'), i18n.t('common.amount'), i18n.t('pdf.percentage')]],
       body: categoryTableData,
       theme: 'grid',
       headStyles: { fillColor: [37, 99, 235] },
@@ -86,10 +87,10 @@ export const generatePDFReport = async (expenses: Expense[], options: ReportOpti
   
   // Detailed transactions table
   if (filteredExpenses.length > 0) {
-    const finalY = (doc as any).lastAutoTable?.finalY || 140;
+    const finalY = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY || 140;
     
     doc.setFontSize(14);
-    doc.text('Detailed Transactions', 20, finalY + 20);
+    doc.text(i18n.t('pdf.detailedTransactions'), 20, finalY + 20);
     
     const transactionData = filteredExpenses
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -103,7 +104,7 @@ export const generatePDFReport = async (expenses: Expense[], options: ReportOpti
     
     autoTable(doc, {
       startY: finalY + 25,
-      head: [['Date', 'Description', 'Category', 'Amount']],
+      head: [[i18n.t('common.date'), i18n.t('common.description'), i18n.t('expenseForm.category'), i18n.t('common.amount')]],
       body: transactionData,
       theme: 'striped',
       headStyles: { fillColor: [37, 99, 235] },
@@ -121,7 +122,7 @@ export const generatePDFReport = async (expenses: Expense[], options: ReportOpti
   if (options.includeCharts) {
     doc.addPage();
     doc.setFontSize(20);
-    doc.text('Charts', 20, 25);
+    doc.text(i18n.t('pdf.charts'), 20, 25);
 
     const pieChartElement = document.getElementById('pie-chart-container');
     if (pieChartElement) {
@@ -153,7 +154,7 @@ export const generatePDFReport = async (expenses: Expense[], options: ReportOpti
     doc.setFontSize(8);
     doc.setTextColor(156, 163, 175);
     doc.text(
-      `Generated on ${format(new Date(), 'MMM dd, yyyy')} - Page ${i} of ${pageCount}`,
+      i18n.t('pdf.generatedOn', { date: format(new Date(), 'MMM dd, yyyy') }) + ` - ${i18n.t('pdf.page', { current: i, total: pageCount })}`,
       pageWidth - 20,
       pageHeight - 10,
       { align: 'right' }
@@ -169,23 +170,25 @@ const filterExpensesByPeriod = (expenses: Expense[], options: ReportOptions): Ex
   const now = new Date();
   
   switch (options.period) {
-    case 'monthly':
+    case 'monthly': {
       const monthStart = startOfMonth(now);
       const monthEnd = endOfMonth(now);
       return expenses.filter(expense => {
         const expenseDate = new Date(expense.date);
         return expenseDate >= monthStart && expenseDate <= monthEnd;
       });
-      
-    case 'yearly':
+    }
+
+    case 'yearly': {
       const yearStart = startOfYear(now);
       const yearEnd = endOfYear(now);
       return expenses.filter(expense => {
         const expenseDate = new Date(expense.date);
         return expenseDate >= yearStart && expenseDate <= yearEnd;
       });
-      
-    case 'custom':
+    }
+
+    case 'custom': {
       if (options.startDate && options.endDate) {
         return expenses.filter(expense => {
           const expenseDate = new Date(expense.date);
@@ -193,7 +196,8 @@ const filterExpensesByPeriod = (expenses: Expense[], options: ReportOptions): Ex
         });
       }
       return expenses;
-      
+    }
+
     default:
       return expenses;
   }
@@ -204,16 +208,19 @@ const getPeriodText = (options: ReportOptions): string => {
   
   switch (options.period) {
     case 'monthly':
-      return `Monthly Report - ${format(now, 'MMMM yyyy')}`;
+      return i18n.t('pdf.monthlyReport', { month: format(now, 'MMMM yyyy') });
     case 'yearly':
-      return `Yearly Report - ${format(now, 'yyyy')}`;
+      return i18n.t('pdf.yearlyReport', { year: format(now, 'yyyy') });
     case 'custom':
       if (options.startDate && options.endDate) {
-        return `Custom Report - ${format(options.startDate, 'MMM dd, yyyy')} to ${format(options.endDate, 'MMM dd, yyyy')}`;
+        return i18n.t('pdf.customReport', {
+          startDate: format(options.startDate, 'MMM dd, yyyy'),
+          endDate: format(options.endDate, 'MMM dd, yyyy')
+        });
       }
-      return 'Custom Report';
+      return i18n.t('pdf.customReportDefault');
     default:
-      return 'Expense Report';
+      return i18n.t('pdf.expenseReport');
   }
 };
 
@@ -252,7 +259,7 @@ export const generateMonthlyComparison = (expenses: Expense[]): void => {
   // Header
   doc.setFontSize(20);
   doc.setTextColor(37, 99, 235);
-  doc.text('Monthly Expense Comparison', 20, 25);
+  doc.text(i18n.t('pdf.monthlyComparison'), 20, 25);
   
   // Monthly comparison table
   const tableData = monthlyData.map(data => [
@@ -263,7 +270,7 @@ export const generateMonthlyComparison = (expenses: Expense[]): void => {
   
   autoTable(doc, {
     startY: 40,
-    head: [['Month', 'Transactions', 'Total Amount']],
+    head: [[i18n.t('pdf.month'), i18n.t('analytics.transactions'), i18n.t('common.amount')]],
     body: tableData,
     theme: 'grid',
     headStyles: { fillColor: [37, 99, 235] },
