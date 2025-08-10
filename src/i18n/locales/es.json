@@ -38,8 +38,7 @@
     "passwordPlaceholder": "Ingresa tu contraseña",
     "signingIn": "Iniciando sesión...",
     "signIn": "Iniciar Sesión",
-    "signOut": "Cerrar sesión",
-    "demoCredentials": "Credenciales de demostración: Usa cualquier correo y contraseña para continuar"
+    "signOut": "Cerrar sesión"
   },
 
   "header": {

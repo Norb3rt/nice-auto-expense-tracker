@@ -16,7 +16,7 @@ import {
 import { Bar, Pie, Line } from 'react-chartjs-2';
 import { Expense } from '../types';
 import { format, startOfMonth, eachMonthOfInterval, subMonths } from 'date-fns';
-import { exportToCSV } from '../utils/storage';
+import { exportToCSV } from '../utils/exportUtils';
 import { generatePDFReport, generateMonthlyComparison, ReportOptions } from '../utils/pdfGenerator';
 import { ReportFilters } from './Reports/ReportFilters';
 import { AdvancedAnalytics } from './Reports/AdvancedAnalytics';
@@ -162,7 +162,7 @@ export const Reports: React.FC<ReportsProps> = ({ expenses }) => {
         beginAtZero: true,
         ticks: {
           callback: function (value: string | number) {
-            return '$' + value.toFixed(0);
+            return '$' + (typeof value === 'number' ? value.toFixed(0) : value);
           }
         }
       }

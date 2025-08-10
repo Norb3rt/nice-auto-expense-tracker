@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Tag, ArrowRight, X } from 'lucide-react';
+import { Plus, Tag, ArrowRight, X, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { saveCustomCategories } from '../utils/storage';
+import { useAuth } from '../contexts/AuthContext';
+import { categoryService } from '../services/categoryService';
 
 interface CategorySetupProps {
   onComplete: (categories: string[]) => void;
@@ -10,13 +11,15 @@ interface CategorySetupProps {
 
 export const CategorySetup: React.FC<CategorySetupProps> = ({ onComplete, onSkip }) => {
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
   const [categories, setCategories] = useState<string[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
+
 
   // Suggested categories for quick setup
   const suggestedCategories = [
     'Food & Dining',
-    'Transportation', 
+    'Transportation',
     'Shopping',
     'Entertainment',
     'Bills & Utilities',
@@ -43,9 +46,22 @@ export const CategorySetup: React.FC<CategorySetupProps> = ({ onComplete, onSkip
     }
   };
 
-  const handleComplete = () => {
-    saveCustomCategories(categories);
-    onComplete(categories);
+  const handleComplete = async () => {
+    if (!currentUser || categories.length === 0) return;
+
+    try {
+      // Create categories in Firebase
+      for (const categoryName of categories) {
+        await categoryService.addCategory(currentUser.id, {
+          name: categoryName
+        });
+      }
+
+      onComplete(categories);
+    } catch (error) {
+      console.error('Error creating categories:', error);
+      // TODO: Show error message to user
+    }
   };
 
   return (
@@ -75,11 +91,10 @@ export const CategorySetup: React.FC<CategorySetupProps> = ({ onComplete, onSkip
                 <button
                   key={suggested}
                   onClick={() => isSelected ? handleRemoveCategory(suggested) : handleAddCategory(suggested)}
-                  className={`p-3 rounded-xl border-2 transition-all duration-200 text-left ${
-                    isSelected
-                      ? 'border-green-500 bg-green-50 text-green-700'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                  }`}
+                  className={`p-3 rounded-xl border-2 transition-all duration-200 text-left ${isSelected
+                    ? 'border-green-500 bg-green-50 text-green-700'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{suggested}</span>

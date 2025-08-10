@@ -1,26 +1,38 @@
 import React, { useState } from 'react';
-import { LogIn, Mail, Lock } from 'lucide-react';
+import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface LoginProps {
-  onLogin: (email: string, password: string) => void;
+  onLogin?: (email: string, password: string) => void; // Made optional since we're using Firebase
 }
 
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const { t } = useTranslation();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      onLogin(email, password);
+    setError(null);
+
+    try {
+      const result = await signIn(email, password);
+      if (!result.success) {
+        setError(result.error || 'Login failed');
+      } else if (onLogin) {
+        // Call legacy onLogin if provided for backward compatibility
+        onLogin(email, password);
+      }
+    } catch {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -34,6 +46,13 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('auth.welcomeBack')}</h1>
             <p className="text-gray-600">{t('auth.signInSubtitle')}</p>
           </div>
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center space-x-3">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -85,12 +104,6 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               )}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              {t('auth.demoCredentials')}
-            </p>
-          </div>
         </div>
       </div>
     </div>

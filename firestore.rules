@@ -1,0 +1,137 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for validation and authorization
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAuthorizedUser() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/authorizedUsers/$(request.auth.token.email));
+    }
+    
+    function isActiveAuthorizedUser() {
+      return isAuthorizedUser() && 
+             get(/databases/$(database)/documents/authorizedUsers/$(request.auth.token.email)).data.isActive == true;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidEmail(email) {
+      return email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+    }
+    
+    function isValidExpense(data) {
+      return data.keys().hasAll(['userId', 'amount', 'description', 'category', 'date', 'createdAt']) &&
+             data.userId is string &&
+             data.amount is number &&
+             data.amount > 0 &&
+             data.description is string &&
+             data.description.size() > 0 &&
+             data.category is string &&
+             data.category.size() > 0 &&
+             data.date is string &&
+             data.date.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
+             data.createdAt is timestamp;
+    }
+    
+    function isValidCategory(data) {
+      return data.keys().hasAll(['userId', 'name', 'createdAt', 'isDefault', 'isActive']) &&
+             data.userId is string &&
+             data.name is string &&
+             data.name.size() > 0 &&
+             data.createdAt is timestamp &&
+             data.isDefault is bool &&
+             data.isActive is bool;
+    }
+    
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'name', 'createdAt', 'isActive']) &&
+             data.uid is string &&
+             data.email is string &&
+             isValidEmail(data.email) &&
+             data.name is string &&
+             data.name.size() > 0 &&
+             data.createdAt is timestamp &&
+             data.isActive is bool;
+    }
+    
+    // Authorized Users Collection
+    // Allow reading for authentication check - users can read their own authorization status
+    // Only admins can write (implement admin logic as needed)
+    match /authorizedUsers/{email} {
+      allow read: if request.auth != null && request.auth.token.email == email;
+      allow write: if false; // Disable writes through client - use admin SDK or Functions
+    }
+    
+    // Users Collection
+    // Users can only access their own user document
+    match /users/{userId} {
+      allow read: if isActiveAuthorizedUser() && isOwner(userId);
+      
+      allow create: if isActiveAuthorizedUser() && 
+                       isOwner(userId) && 
+                       isValidUser(request.resource.data) &&
+                       request.resource.data.uid == request.auth.uid &&
+                       request.resource.data.email == request.auth.token.email;
+      
+      allow update: if isActiveAuthorizedUser() && 
+                       isOwner(userId) && 
+                       isValidUser(request.resource.data) &&
+                       request.resource.data.uid == resource.data.uid &&
+                       request.resource.data.email == resource.data.email &&
+                       request.resource.data.createdAt == resource.data.createdAt;
+      
+      allow delete: if false; // Prevent user deletion through client
+    }
+    
+    // Expenses Collection
+    // Users can only access their own expenses
+    match /expenses/{expenseId} {
+      allow read: if isActiveAuthorizedUser() && 
+                     resource.data.userId == request.auth.uid;
+      
+      allow create: if isActiveAuthorizedUser() && 
+                       isValidExpense(request.resource.data) &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      allow update: if isActiveAuthorizedUser() && 
+                       resource.data.userId == request.auth.uid &&
+                       isValidExpense(request.resource.data) &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.createdAt == resource.data.createdAt;
+      
+      allow delete: if isActiveAuthorizedUser() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // Categories Collection
+    // Users can only access their own categories
+    match /categories/{categoryId} {
+      allow read: if isActiveAuthorizedUser() && 
+                     resource.data.userId == request.auth.uid;
+      
+      allow create: if isActiveAuthorizedUser() && 
+                       isValidCategory(request.resource.data) &&
+                       request.resource.data.userId == request.auth.uid;
+      
+      allow update: if isActiveAuthorizedUser() && 
+                       resource.data.userId == request.auth.uid &&
+                       isValidCategory(request.resource.data) &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.createdAt == resource.data.createdAt;
+      
+      allow delete: if isActiveAuthorizedUser() && 
+                       resource.data.userId == request.auth.uid;
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

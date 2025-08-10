@@ -3,7 +3,8 @@ import { Edit3, Trash2, Search, Filter } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Expense } from '../types';
 import { format } from 'date-fns';
-import { getCustomCategories } from '../utils/storage';
+import { useAuth } from '../contexts/AuthContext';
+import { categoryService } from '../services/categoryService';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -17,6 +18,7 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
   onEditExpense
 }) => {
   const { t } = useTranslation();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -155,6 +157,7 @@ interface EditExpenseFormProps {
 
 const EditExpenseForm: React.FC<EditExpenseFormProps> = ({ expense, onSave, onCancel }) => {
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
   const [amount, setAmount] = useState(expense.amount.toString());
   const [description, setDescription] = useState(expense.description);
   const [category, setCategory] = useState(expense.category);
@@ -163,8 +166,19 @@ const EditExpenseForm: React.FC<EditExpenseFormProps> = ({ expense, onSave, onCa
 
   // Load custom categories on component mount
   useEffect(() => {
-    setCustomCategories(getCustomCategories());
-  }, []);
+    const loadCategories = async () => {
+      if (currentUser) {
+        try {
+          const categoryNames = await categoryService.getUserCategoryNames(currentUser.id);
+          setCustomCategories(categoryNames);
+        } catch (error) {
+          console.error('Error loading categories:', error);
+        }
+      }
+    };
+
+    loadCategories();
+  }, [currentUser]);
 
   // Get all available categories (user-defined only)
   const getAllCategories = () => {

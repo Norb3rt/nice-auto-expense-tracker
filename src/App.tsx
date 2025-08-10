@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Login } from './components/Auth/Login';
 import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
@@ -9,115 +10,111 @@ import { ExpenseList } from './components/ExpenseList';
 import { Reports } from './components/Reports';
 import { CategoryManagement } from './components/CategoryManagement';
 import { CategorySetup } from './components/CategorySetup';
-import { Expense, User } from './types';
-import { storage, generateDemoData, getCustomCategories } from './utils/storage';
+import { Expense } from './types';
+import { expenseService } from './services/expenseService';
+import { categoryService } from './services/categoryService';
 
-function App() {
-  const [user, setUser] = useState<User | null>(null);
+// Main App Component (wrapped with AuthProvider)
+function AppContent() {
+  const { currentUser, loading, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCategorySetup, setShowCategorySetup] = useState(false);
 
   useEffect(() => {
-    // Check for existing session
-    const savedUser = storage.getUser();
-    const authToken = storage.getAuthToken();
+    let unsubscribe: (() => void) | undefined;
 
-    if (savedUser && authToken) {
-      setUser(savedUser);
-      const savedExpenses = storage.getExpenses();
-      const existingCategories = getCustomCategories();
+    const loadUserData = async () => {
+      if (currentUser) {
+        try {
+          // Check if user has categories, create defaults if needed
+          const userCategories = await categoryService.ensureUserHasCategories(currentUser.id);
 
-      // Check if user needs category setup
-      if (existingCategories.length === 0 && savedExpenses.length === 0) {
-        setShowCategorySetup(true);
-      } else if (savedExpenses.length === 0) {
-        // If no expenses exist but categories exist, don't load demo data
-        setExpenses([]);
-      } else {
-        setExpenses(savedExpenses);
+          // Set up real-time listener for expenses
+          unsubscribe = expenseService.subscribeToUserExpenses(currentUser.id, (userExpenses) => {
+            setExpenses(userExpenses);
+
+            // Show category setup if user has no expenses and only default categories
+            if (userExpenses.length === 0 && userCategories.every(cat => cat.isDefault)) {
+              setShowCategorySetup(true);
+            }
+          });
+        } catch (error) {
+          console.error('Error loading user data:', error);
+        }
       }
-    }
-
-    setIsLoading(false);
-  }, []);
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleLogin = (email: string, _password: string) => {
-    // Simulate authentication
-    const newUser: User = {
-      id: '1',
-      name: email.split('@')[0],
-      email
+      setIsLoading(false);
     };
 
-    setUser(newUser);
-    storage.saveUser(newUser);
-    storage.saveAuthToken('demo-token-' + Date.now());
+    if (!loading) {
+      loadUserData();
+    }
 
-    // Check if new user needs category setup
-    const existingCategories = getCustomCategories();
-    const savedExpenses = storage.getExpenses();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [currentUser, loading]);
 
-    if (existingCategories.length === 0 && savedExpenses.length === 0) {
-      setShowCategorySetup(true);
-    } else if (savedExpenses.length === 0) {
+  const handleLogout = async () => {
+    try {
+      await signOut();
       setExpenses([]);
-    } else {
-      setExpenses(savedExpenses);
+      setActiveTab('dashboard');
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    setExpenses([]);
-    storage.clearAll();
-    setActiveTab('dashboard');
+  const handleAddExpense = async (expenseData: Omit<Expense, 'id' | 'createdAt'>) => {
+    if (!currentUser) return;
+
+    try {
+      await expenseService.addExpense(currentUser.id, expenseData);
+      // Expenses will be updated via real-time listener
+      setActiveTab('dashboard'); // Navigate to dashboard after adding
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      // TODO: Show error message to user
+    }
   };
 
-  const handleAddExpense = (expenseData: Omit<Expense, 'id' | 'createdAt'>) => {
-    const newExpense: Expense = {
-      ...expenseData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
-    };
-
-    const updatedExpenses = [newExpense, ...expenses];
-    setExpenses(updatedExpenses);
-    storage.saveExpenses(updatedExpenses);
-    setActiveTab('dashboard'); // Navigate to dashboard after adding
+  const handleDeleteExpense = async (id: string) => {
+    try {
+      await expenseService.deleteExpense(id);
+      // Expenses will be updated via real-time listener
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      // TODO: Show error message to user
+    }
   };
 
-  const handleDeleteExpense = (id: string) => {
-    const updatedExpenses = expenses.filter(expense => expense.id !== id);
-    setExpenses(updatedExpenses);
-    storage.saveExpenses(updatedExpenses);
+  const handleEditExpense = async (updatedExpense: Expense) => {
+    try {
+      const { id, ...updateData } = updatedExpense;
+      await expenseService.updateExpense(id, updateData);
+      // Expenses will be updated via real-time listener
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      // TODO: Show error message to user
+    }
   };
 
-  const handleEditExpense = (updatedExpense: Expense) => {
-    const updatedExpenses = expenses.map(expense =>
-      expense.id === updatedExpense.id ? updatedExpense : expense
-    );
-    setExpenses(updatedExpenses);
-    storage.saveExpenses(updatedExpenses);
-  };
+  const handleCategorySetupComplete = async () => {
+    if (!currentUser) return;
 
-  const handleCategorySetupComplete = (categories: string[]) => {
     setShowCategorySetup(false);
-    // Optionally load demo data with the new categories
-    if (categories.length > 0) {
-      const demoExpenses = generateDemoData();
-      setExpenses(demoExpenses);
-      storage.saveExpenses(demoExpenses);
-    }
+    // Categories are already created by the CategorySetup component
+    // Expenses will be updated via real-time listener if any demo data was added
   };
 
   const handleCategorySetupSkip = () => {
     setShowCategorySetup(false);
   };
 
-  if (isLoading) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex items-center space-x-3">
@@ -128,8 +125,8 @@ function App() {
     );
   }
 
-  if (!user) {
-    return <Login onLogin={handleLogin} />;
+  if (!currentUser) {
+    return <Login />;
   }
 
   if (showCategorySetup) {
@@ -161,7 +158,8 @@ function App() {
             expenses={expenses}
             onUpdateExpenses={(updatedExpenses) => {
               setExpenses(updatedExpenses);
-              storage.saveExpenses(updatedExpenses);
+              // Note: CategoryManagement should use Firebase services directly
+              // This is kept for backward compatibility
             }}
           />
         );
@@ -174,7 +172,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header user={user} onLogout={handleLogout} />
+      <Header user={currentUser} onLogout={handleLogout} />
 
       <div className="flex">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
@@ -186,6 +184,15 @@ function App() {
 
       <MobileNav activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
+  );
+}
+
+// Main App component with AuthProvider wrapper
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

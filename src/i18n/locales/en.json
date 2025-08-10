@@ -38,8 +38,7 @@
     "passwordPlaceholder": "Enter your password",
     "signingIn": "Signing in...",
     "signIn": "Sign In",
-    "signOut": "Sign out",
-    "demoCredentials": "Demo credentials: Use any email and password to continue"
+    "signOut": "Sign out"
   },
 
   "header": {

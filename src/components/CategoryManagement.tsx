@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Tag, Edit3, Trash2, AlertTriangle, Check, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Expense } from '../types';
-import { getCustomCategories, saveCustomCategories } from '../utils/storage';
+import { useAuth } from '../contexts/AuthContext';
+import { categoryService, Category } from '../services/categoryService';
+import { expenseService } from '../services/expenseService';
 
 interface CategoryManagementProps {
   expenses: Expense[];
@@ -10,58 +12,100 @@ interface CategoryManagementProps {
 }
 
 export const CategoryManagement: React.FC<CategoryManagementProps> = ({
-  expenses,
-  onUpdateExpenses
+  expenses
 }) => {
   const { t } = useTranslation();
-  const [categories, setCategories] = useState<string[]>([]);
+  const { currentUser } = useAuth();
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editCategoryName, setEditCategoryName] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [replacementCategory, setReplacementCategory] = useState('');
 
+
   useEffect(() => {
-    setCategories(getCustomCategories());
-  }, []);
+    const loadCategories = async () => {
+      if (currentUser) {
+        try {
+          const userCategories = await categoryService.getUserCategories(currentUser.id);
+          setCategories(userCategories);
+        } catch (error) {
+          console.error('Error loading categories:', error);
+        }
+      }
+    };
 
-  const getCategoryUsageCount = (category: string) => {
-    return expenses.filter(expense => expense.category === category).length;
+    loadCategories();
+  }, [currentUser]);
+
+  const getCategoryUsageCount = (categoryName: string) => {
+    return expenses.filter(expense => expense.category === categoryName).length;
   };
 
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
+    if (!currentUser) return;
+
     const trimmedName = newCategoryName.trim();
-    if (trimmedName && !categories.includes(trimmedName)) {
-      const updatedCategories = [...categories, trimmedName];
-      setCategories(updatedCategories);
-      saveCustomCategories(updatedCategories);
-      setNewCategoryName('');
+    if (trimmedName && !categories.some(cat => cat.name === trimmedName)) {
+      try {
+        await categoryService.addCategory(currentUser.id, {
+          name: trimmedName
+        });
+
+        // Reload categories
+        const userCategories = await categoryService.getUserCategories(currentUser.id);
+        setCategories(userCategories);
+        setNewCategoryName('');
+      } catch (error) {
+        console.error('Error adding category:', error);
+        // TODO: Show error message to user
+      }
     }
   };
 
-  const handleEditCategory = (oldName: string, newName: string) => {
+  const handleEditCategory = async (oldName: string, newName: string) => {
+    if (!currentUser) return;
+
     const trimmedName = newName.trim();
-    if (trimmedName && trimmedName !== oldName && !categories.includes(trimmedName)) {
-      // Update category list
-      const updatedCategories = categories.map(cat => cat === oldName ? trimmedName : cat);
-      setCategories(updatedCategories);
-      saveCustomCategories(updatedCategories);
+    const categoryToEdit = categories.find(cat => cat.name === oldName);
 
-      // Update all expenses that use this category
-      const updatedExpenses = expenses.map(expense =>
-        expense.category === oldName
-          ? { ...expense, category: trimmedName }
-          : expense
-      );
-      onUpdateExpenses(updatedExpenses);
+    if (trimmedName && trimmedName !== oldName && !categories.some(cat => cat.name === trimmedName) && categoryToEdit) {
+      try {
+        // Update category in Firebase
+        await categoryService.updateCategory(categoryToEdit.id, {
+          name: trimmedName
+        });
 
-      setEditingCategory(null);
-      setEditCategoryName('');
+        // Update all expenses that use this category
+        const expensesToUpdate = expenses.filter(expense => expense.category === oldName);
+        for (const expense of expensesToUpdate) {
+          await expenseService.updateExpense(expense.id, {
+            ...expense,
+            category: trimmedName
+          });
+        }
+
+        // Reload categories
+        const userCategories = await categoryService.getUserCategories(currentUser.id);
+        setCategories(userCategories);
+
+        setEditingCategory(null);
+        setEditCategoryName('');
+      } catch (error) {
+        console.error('Error editing category:', error);
+        // TODO: Show error message to user
+      }
     }
   };
 
-  const handleDeleteCategory = (categoryToDelete: string) => {
+  const handleDeleteCategory = async (categoryToDelete: string) => {
+    if (!currentUser) return;
+
     const usageCount = getCategoryUsageCount(categoryToDelete);
+    const categoryToDeleteObj = categories.find(cat => cat.name === categoryToDelete);
+
+    if (!categoryToDeleteObj) return;
 
     if (usageCount > 0) {
       // Show confirmation dialog for categories in use
@@ -69,41 +113,59 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
       return;
     }
 
-    // Delete category directly if not in use
-    const updatedCategories = categories.filter(cat => cat !== categoryToDelete);
-    setCategories(updatedCategories);
-    saveCustomCategories(updatedCategories);
+    try {
+      // Delete category directly if not in use
+      await categoryService.deleteCategory(categoryToDeleteObj.id);
+
+      // Reload categories
+      const userCategories = await categoryService.getUserCategories(currentUser.id);
+      setCategories(userCategories);
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      // TODO: Show error message to user
+    }
   };
 
-  const confirmDeleteCategory = () => {
-    if (!showDeleteConfirm) return;
+  const confirmDeleteCategory = async () => {
+    if (!showDeleteConfirm || !currentUser) return;
 
     const categoryToDelete = showDeleteConfirm;
-    const updatedCategories = categories.filter(cat => cat !== categoryToDelete);
-    setCategories(updatedCategories);
-    saveCustomCategories(updatedCategories);
+    const categoryToDeleteObj = categories.find(cat => cat.name === categoryToDelete);
 
-    // Handle expenses with this category
-    if (replacementCategory) {
-      // Replace with selected category
-      const updatedExpenses = expenses.map(expense =>
-        expense.category === categoryToDelete
-          ? { ...expense, category: replacementCategory }
-          : expense
-      );
-      onUpdateExpenses(updatedExpenses);
-    } else {
-      // Remove expenses with this category (or set to empty)
-      const updatedExpenses = expenses.map(expense =>
-        expense.category === categoryToDelete
-          ? { ...expense, category: '' }
-          : expense
-      );
-      onUpdateExpenses(updatedExpenses);
+    if (!categoryToDeleteObj) return;
+
+    try {
+      // Handle expenses with this category
+      const expensesToUpdate = expenses.filter(expense => expense.category === categoryToDelete);
+
+      if (replacementCategory) {
+        // Replace category in all expenses
+        for (const expense of expensesToUpdate) {
+          await expenseService.updateExpense(expense.id, {
+            ...expense,
+            category: replacementCategory
+          });
+        }
+      } else {
+        // Delete expenses with this category
+        for (const expense of expensesToUpdate) {
+          await expenseService.deleteExpense(expense.id);
+        }
+      }
+
+      // Delete the category
+      await categoryService.deleteCategory(categoryToDeleteObj.id);
+
+      // Reload categories
+      const userCategories = await categoryService.getUserCategories(currentUser.id);
+      setCategories(userCategories);
+
+      setShowDeleteConfirm(null);
+      setReplacementCategory('');
+    } catch (error) {
+      console.error('Error confirming category deletion:', error);
+      // TODO: Show error message to user
     }
-
-    setShowDeleteConfirm(null);
-    setReplacementCategory('');
   };
 
   return (
@@ -124,19 +186,19 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
               onChange={(e) => setNewCategoryName(e.target.value)}
               placeholder={t('categoryManagement.categoryNamePlaceholder')}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
             />
           </div>
           <button
             onClick={handleAddCategory}
-            disabled={!newCategoryName.trim() || categories.includes(newCategoryName.trim())}
+            disabled={!newCategoryName.trim() || categories.some(cat => cat.name === newCategoryName.trim())}
             className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             {t('common.add')}
           </button>
         </div>
-        {newCategoryName.trim() && categories.includes(newCategoryName.trim()) && (
+        {newCategoryName.trim() && categories.some(cat => cat.name === newCategoryName.trim()) && (
           <p className="text-red-500 text-sm mt-2">{t('categoryManagement.categoryExists')}</p>
         )}
       </div>
@@ -156,19 +218,19 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
         ) : (
           <div className="space-y-3">
             {categories.map((category) => {
-              const usageCount = getCategoryUsageCount(category);
+              const usageCount = getCategoryUsageCount(category.name);
               return (
-                <div key={category} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
+                <div key={category.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Tag className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                    {editingCategory === category ? (
+                    {editingCategory === category.name ? (
                       <input
                         type="text"
                         value={editCategoryName}
                         onChange={(e) => setEditCategoryName(e.target.value)}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-base"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') handleEditCategory(category, editCategoryName);
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleEditCategory(category.name, editCategoryName);
                           if (e.key === 'Escape') {
                             setEditingCategory(null);
                             setEditCategoryName('');
@@ -178,7 +240,7 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
                       />
                     ) : (
                       <div className="flex-1 min-w-0">
-                        <span className="font-medium text-gray-900 block truncate">{category}</span>
+                        <span className="font-medium text-gray-900 block truncate">{category.name}</span>
                         {usageCount > 0 && (
                           <span className="text-sm text-gray-500">
                             {usageCount} {usageCount === 1 ? t('categoryManagement.expense') : t('categoryManagement.expenses')}
@@ -189,11 +251,11 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {editingCategory === category ? (
+                    {editingCategory === category.name ? (
                       <>
                         <button
-                          onClick={() => handleEditCategory(category, editCategoryName)}
-                          disabled={!editCategoryName.trim() || (editCategoryName.trim() !== category && categories.includes(editCategoryName.trim()))}
+                          onClick={() => handleEditCategory(category.name, editCategoryName)}
+                          disabled={!editCategoryName.trim() || (editCategoryName.trim() !== category.name && categories.some(cat => cat.name === editCategoryName.trim()))}
                           className="p-2 text-green-600 hover:text-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                           title={t('common.save')}
                         >
@@ -214,8 +276,8 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
                       <>
                         <button
                           onClick={() => {
-                            setEditingCategory(category);
-                            setEditCategoryName(category);
+                            setEditingCategory(category.name);
+                            setEditCategoryName(category.name);
                           }}
                           className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
                           title={t('common.edit')}
@@ -223,7 +285,7 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
                           <Edit3 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteCategory(category)}
+                          onClick={() => handleDeleteCategory(category.name)}
                           className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                           title={t('common.delete')}
                         >
@@ -268,8 +330,8 @@ export const CategoryManagement: React.FC<CategoryManagementProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value="">{t('categoryManagement.removeFromExpenses')}</option>
-                  {categories.filter(cat => cat !== showDeleteConfirm).map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                  {categories.filter(cat => cat.name !== showDeleteConfirm).map(cat => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
               </div>

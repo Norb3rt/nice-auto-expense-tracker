@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Plus, DollarSign, Tag, Calendar, FileText, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Expense } from '../types';
-import { getCustomCategories, saveCustomCategories } from '../utils/storage';
+import { useAuth } from '../contexts/AuthContext';
+import { categoryService } from '../services/categoryService';
 
 interface ExpenseFormProps {
   onAddExpense: (expense: Omit<Expense, 'id' | 'createdAt'>) => void;
@@ -10,6 +11,7 @@ interface ExpenseFormProps {
 
 export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -19,24 +21,47 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
-  // Load custom categories on component mount
+
+  // Load user categories on component mount
   useEffect(() => {
-    setCustomCategories(getCustomCategories());
-  }, []);
+    const loadCategories = async () => {
+      if (currentUser) {
+        try {
+          const categoryNames = await categoryService.getUserCategoryNames(currentUser.id);
+          setCustomCategories(categoryNames);
+        } catch (error) {
+          console.error('Error loading categories:', error);
+        }
+      }
+    };
+
+    loadCategories();
+  }, [currentUser]);
 
   // Get all available categories (user-defined only)
   const getAllCategories = () => {
     return customCategories;
   };
 
-  const handleAddCustomCategory = () => {
-    if (newCategoryName.trim() && !getAllCategories().includes(newCategoryName.trim())) {
-      const updatedCategories = [...customCategories, newCategoryName.trim()];
-      setCustomCategories(updatedCategories);
-      saveCustomCategories(updatedCategories);
+  const handleAddCustomCategory = async () => {
+    if (!currentUser || !newCategoryName.trim() || getAllCategories().includes(newCategoryName.trim())) {
+      return;
+    }
+
+    try {
+      await categoryService.addCategory(currentUser.id, {
+        name: newCategoryName.trim()
+      });
+
+      // Reload categories
+      const categoryNames = await categoryService.getUserCategoryNames(currentUser.id);
+      setCustomCategories(categoryNames);
       setCategory(newCategoryName.trim());
       setNewCategoryName('');
       setShowAddCategory(false);
+    } catch (error) {
+      console.error('Error adding category:', error);
+      // TODO: Show error message to user
     }
   };
 
@@ -217,7 +242,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
                         onChange={(e) => setNewCategoryName(e.target.value)}
                         placeholder={t('expenseForm.categoryNamePlaceholder')}
                         className="responsive-input w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        onKeyPress={(e) => e.key === 'Enter' && handleAddCustomCategory()}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddCustomCategory()}
                         autoFocus
                       />
 
