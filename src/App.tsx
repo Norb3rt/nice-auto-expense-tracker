@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Login } from './components/Auth/Login';
 import { Header } from './components/Layout/Header';
@@ -12,7 +12,7 @@ import { CategoryManagement } from './components/CategoryManagement';
 import { CategorySetup } from './components/CategorySetup';
 import { Expense } from './types';
 import { expenseService } from './services/expenseService';
-import { categoryService } from './services/categoryService';
+
 
 // Main App Component (wrapped with AuthProvider)
 function AppContent() {
@@ -22,23 +22,27 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [showCategorySetup, setShowCategorySetup] = useState(false);
 
+  // Clave de localStorage para saber si el usuario ya vio el setup de categorías
+  const getCategorySetupKey = (userId: string) => `categorySetupSeen_${userId}`;
+
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
 
     const loadUserData = async () => {
       if (currentUser) {
         try {
-          // Check if user has categories, create defaults if needed
-          const userCategories = await categoryService.ensureUserHasCategories(currentUser.id);
+          // Solo mostrar el setup de categorías si el usuario NUNCA lo ha visto antes
+          // NO creamos categorías automáticamente — el usuario elige
+          const setupKey = getCategorySetupKey(currentUser.id);
+          const hasSeenSetup = localStorage.getItem(setupKey) === 'true';
+
+          if (!hasSeenSetup) {
+            setShowCategorySetup(true);
+          }
 
           // Set up real-time listener for expenses
           unsubscribe = expenseService.subscribeToUserExpenses(currentUser.id, (userExpenses) => {
             setExpenses(userExpenses);
-
-            // Show category setup if user has no expenses and only default categories
-            if (userExpenses.length === 0 && userCategories.every(cat => cat.isDefault)) {
-              setShowCategorySetup(true);
-            }
           });
         } catch (error) {
           console.error('Error loading user data:', error);
@@ -105,12 +109,21 @@ function AppContent() {
   const handleCategorySetupComplete = async () => {
     if (!currentUser) return;
 
+    // Marcar que el usuario ya completó el setup — no volver a mostrarlo nunca
+    const setupKey = getCategorySetupKey(currentUser.id);
+    localStorage.setItem(setupKey, 'true');
+
     setShowCategorySetup(false);
     // Categories are already created by the CategorySetup component
     // Expenses will be updated via real-time listener if any demo data was added
   };
 
   const handleCategorySetupSkip = () => {
+    if (currentUser) {
+      // Marcar que el usuario ya vio el setup (aunque lo omitió) — no volver a mostrarlo
+      const setupKey = getCategorySetupKey(currentUser.id);
+      localStorage.setItem(setupKey, 'true');
+    }
     setShowCategorySetup(false);
   };
 
