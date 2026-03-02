@@ -66,7 +66,7 @@ class CategoryService {
   async createDefaultCategories(userId: string): Promise<Category[]> {
     try {
       const categories: Category[] = [];
-      
+
       for (const defaultCat of this.defaultCategories) {
         const docRef = await addDoc(collection(db, this.collectionName), {
           userId,
@@ -139,28 +139,20 @@ class CategoryService {
     }
   }
 
-  // Delete category (soft delete by setting isActive to false)
+  // Delete category (permanently removes from Firestore)
   async deleteCategory(categoryId: string): Promise<void> {
     try {
       const docRef = doc(db, this.collectionName, categoryId);
-      await updateDoc(docRef, {
-        isActive: false
-      });
+      await deleteDoc(docRef);
     } catch (error) {
       console.error('Error deleting category:', error);
       throw new Error('Failed to delete category');
     }
   }
 
-  // Hard delete category (permanent removal)
+  // Hard delete category (alias for deleteCategory - permanent removal)
   async permanentlyDeleteCategory(categoryId: string): Promise<void> {
-    try {
-      const docRef = doc(db, this.collectionName, categoryId);
-      await deleteDoc(docRef);
-    } catch (error) {
-      console.error('Error permanently deleting category:', error);
-      throw new Error('Failed to permanently delete category');
-    }
+    return this.deleteCategory(categoryId);
   }
 
   // Get single category
@@ -168,7 +160,7 @@ class CategoryService {
     try {
       const docRef = doc(db, this.collectionName, categoryId);
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         return this.convertToCategory(docSnap);
       }
@@ -196,7 +188,7 @@ class CategoryService {
           orderBy('createdAt', 'asc')
         );
       }
-      
+
       const querySnapshot = await getDocs(q);
       return querySnapshot.docs.map(doc => this.convertToCategory(doc));
     } catch (error) {
@@ -250,11 +242,11 @@ class CategoryService {
   async ensureUserHasCategories(userId: string): Promise<Category[]> {
     try {
       const existingCategories = await this.getUserCategories(userId);
-      
+
       if (existingCategories.length === 0) {
         return await this.createDefaultCategories(userId);
       }
-      
+
       return existingCategories;
     } catch (error) {
       console.error('Error ensuring user has categories:', error);
